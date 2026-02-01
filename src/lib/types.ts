@@ -36,7 +36,7 @@ export interface CanonicalCollection {
     initialStateId: number;
 }
 
-export type ActionType = 'SHIFT' | 'REDUCE' | 'ACCEPT' | 'GOTO' | 'ERROR';
+export type ActionType = 'SHIFT' | 'REDUCE' | 'ACCEPT' | 'GOTO' | 'ERROR' | 'CONFLICT';
 
 export interface ParsingAction {
     type: ActionType;

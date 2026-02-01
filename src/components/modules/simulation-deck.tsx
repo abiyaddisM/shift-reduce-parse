@@ -24,6 +24,8 @@ function formatAction(action: ParsingAction | null): string {
         case 'SHIFT': return `Shift to State ${action.payload}`;
         case 'REDUCE': return `Reduce by Prod ${action.payload}`;
         case 'ACCEPT': return `Accept!`;
+        case 'GOTO': return `${action.payload}`;
+        case 'CONFLICT': return `Conflict! (${action.payload} actions)`;
         case 'ERROR': return `Syntax Error`;
         default: return '';
     }
@@ -56,12 +58,14 @@ export function SimulationDeck() {
                 const total = useParserStore.getState().simulationSteps.length;
                 const currentAction = useParserStore.getState().simulationSteps[current]?.actionTaken;
 
-                // If the LAST step was accept or error, stop. 
-                // But stepForward creates a NEXT step. 
+                // If the LAST step was accept or error or conflict, stop.
+                // But stepForward creates a NEXT step.
                 // We stop if the CURRENT state is terminal (Accept/Error already taken).
 
-                if (currentAction?.type === 'ACCEPT' || currentAction?.type === 'ERROR') {
-                    useParserStore.getState().togglePlay();
+                if (currentAction?.type === 'ACCEPT' || currentAction?.type === 'ERROR' || currentAction?.type === 'CONFLICT') {
+                    if (useParserStore.getState().isPlaying) {
+                        useParserStore.getState().togglePlay();
+                    }
                     return;
                 }
 
@@ -128,7 +132,7 @@ export function SimulationDeck() {
                     </div>
                     <div>
                         <Badge variant={
-                            currentStep.actionTaken?.type === 'ERROR' ? 'destructive' :
+                            currentStep.actionTaken?.type === 'ERROR' || currentStep.actionTaken?.type === 'CONFLICT' ? 'destructive' :
                                 currentStep.actionTaken?.type === 'ACCEPT' ? 'default' : 'secondary'
                         }>
                             Step: {currentStepIndex}

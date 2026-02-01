@@ -166,9 +166,8 @@ export const useParserStore = create<ParserState>((set, get) => ({
         if (!actions || actions.length === 0) {
             action = { type: 'ERROR' };
         } else if (actions.length > 1) {
-            // Conflict! Pick first for simulation but maybe flag it?
-            // For now, default to first action
-            action = actions[0];
+            // Conflict! Stop simulation.
+            action = { type: 'CONFLICT', payload: actions.length };
         } else {
             action = actions[0];
         }
@@ -180,6 +179,15 @@ export const useParserStore = create<ParserState>((set, get) => ({
             actionTaken: action,
             stepIndex: currentStep.stepIndex + 1
         };
+
+        // If conflict or error, we don't change state/stack, just record the stop
+        if (action.type === 'CONFLICT' || action.type === 'ERROR') {
+            set({
+                simulationSteps: [...simulationSteps, nextStep],
+                currentStepIndex: currentStepIndex + 1
+            });
+            return;
+        }
 
         if (action.type === 'SHIFT') {
             const nextState = action.payload!;
